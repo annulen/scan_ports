@@ -1,20 +1,35 @@
 #!/usr/bin/env perl
 
-use URI;
 use URI::Split qw(uri_split);
 use strict;
 use warnings;
 
+my %hosts_by_port;
+
+sub dump_hosts {
+    local $" = ', ';
+    while (my ($port, $hosts) = each %hosts_by_port) {
+        print "$port: [ @$hosts ]\n";
+    }
+}
+
+sub do_scan {
+    my $port = shift;
+    my @hosts = @_;
+
+    my $cmd = "nmap -Pn -oG - -p $port @hosts | grep -wF Ports:";
+    system($cmd) == 0 or die "nmap failed: $!";
+}
+
 while(<>) {
-    #my @p = uri_split($_);
-    #print "@p\n";
-    #my $u = URI->new($_);
     chomp;
     my ($scheme, $auth) = uri_split($_);
-    unless ($scheme eq 'socks5') {
-        print "Not socks5 URI detected: $scheme://$auth\n";
-        next;
-    }
+    next if $scheme !~ /^socks/;
     my ($host, $port) = $auth =~ /^(.*):(.*)$/;
-    system("nmap -Pn -oG - -p '$port' '$host' | grep Ports:");
+    push $hosts_by_port{$port}->@*, $host;
 }
+
+while (my ($port, $hosts) = each %hosts_by_port) {
+    do_scan $port, @$hosts;
+}
+

@@ -17,7 +17,7 @@ sub do_scan {
     my $port = shift;
     my @hosts = @_;
 
-    my $cmd = "nmap -Pn -oG - -p $port @hosts | grep -wF Ports:";
+    my $cmd = "nmap -n -Pn -oG - -p $port @hosts | grep -wF Ports:";
     system($cmd) == 0 or die "nmap failed: $!";
 }
 

@@ -7,6 +7,10 @@ use autodie;
 
 my %hosts_by_port;
 
+sub uri_scheme_ok {
+    return shift eq 'socks5';
+}
+
 sub dump_hosts {
     local $" = ', ';
     while (my ($port, $hosts) = each %hosts_by_port) {
@@ -31,7 +35,7 @@ sub do_nmap_scan {
 while(<>) {
     chomp;
     my ($scheme, $auth) = uri_split($_);
-    next if $scheme ne 'socks5';
+    next unless uri_scheme_ok($scheme);
     if (my ($host, $port) = $auth =~ /^(.*):(.*)$/) {
         push $hosts_by_port{$port}->@*, $host;
     } else {

@@ -25,7 +25,7 @@ sub do_nmap_scan {
     open my $nmap, '-|', "nmap -n -Pn -oG - -p $port @hosts | grep -wF Ports:";
     while(<$nmap>) {
         if (my ($host, $port, $info) = m{^Host: ([.0-9]+).*Ports: (\d+)/(.*)}) {
-            print "socks5://$host:$port\t$info\n";
+            print "socks5://$host:$port\t$info\n" if $info =~ /^open/;
         } else {
             warn "Could not parse nmap output: $_\n";
         }

@@ -32,9 +32,19 @@ sub do_nmap_scan {
     }
 }
 
+sub parse_line {
+    # https://raw.githubusercontent.com/proxifly/free-proxy-list/refs/heads/main/proxies/protocols/socks5/data.txt
+    # "socks5://host:port"
+    return uri_split(@_);
+
+    # https://raw.githubusercontent.com/TheSpeedX/PROXY-List/refs/heads/master/socks5.txt
+    # "host:port"
+    #return 'socks5', $_[0];
+}
+
 while(<>) {
     chomp;
-    my ($scheme, $auth) = uri_split($_);
+    my ($scheme, $auth) = parse_line($_);
     next unless uri_scheme_ok($scheme);
     if (my ($host, $port) = $auth =~ /^(.*):(.*)$/) {
         push $hosts_by_port{$port}->@*, $host;
